@@ -1,21 +1,45 @@
 import { GetStaticProps } from "next";
+import { api } from "../services/api";
 
-export default function Home(props) {
+interface Episode {
+  id: string;
+  title: string;
+  members: string;
+  // published_at: string;
+  // thumbnail: string;
+  // description: string;
+  // file: {
+  //   url: string;
+  //   type: string;
+  //   duration: number;
+  // }
+}
+
+interface HomeProps {
+  episodes: Episode[];
+}
+
+export default function Home({ episodes }: HomeProps) {
   return (
     <div>
       <h1>Index</h1>
-      <p>{JSON.stringify(props.episodes)}</p>
+      <p>{JSON.stringify(episodes[0])}</p>
     </div>
   )
 }
 
-export async function getStaticProps() {
-  const response = await fetch('http://localhost:3333/episodes')
-  const data = await response.json()
+export const getStaticProps: GetStaticProps = async () => {
+  const response = await api.get('episodes', {
+    params: {
+      _limit: 12,
+      _sort: 'published_at',
+      _order: 'desc'
+    }
+  });
 
   return {
     props: {
-      episodes: data
+      episodes: response.data
     },
     revalidate: 60 * 60 * 8 // 8 horas
   }
